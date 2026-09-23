@@ -41,9 +41,13 @@ echo -e "${GREEN}✓ Docker Engine & Compose verified.${NC}"
 echo -e "\n${YELLOW}[2/5] Setting Up Production Environment Variables...${NC}"
 if [ ! -f .env ]; then
   echo -e "${YELLOW}Creating default .env configuration file...${NC}"
-  DB_PASSWORD="$(openssl rand -hex 24)"
-  JWT_SECRET="$(openssl rand -hex 48)"
-  NEXTAUTH_SECRET="$(openssl rand -hex 32)"
+command -v openssl >/dev/null 2>&1 || {
+  echo -e "${RED}ERROR: OpenSSL is not installed. Install OpenSSL first.${NC}"
+  exit 1
+}
+DB_PASSWORD="$(openssl rand -hex 24)"
+JWT_SECRET="$(openssl rand -hex 48)"
+NEXTAUTH_SECRET="$(openssl rand -hex 32)"
   cat <<EOF > .env
 NODE_ENV=production
 PORTAL_PORT=3000
