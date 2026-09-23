@@ -3,12 +3,256 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Earthquake Connect</title>
+    <title>SS6CONNECT OneOS™ | Global Command Layer</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #070b12;
+        --card: #0f1524;
+        --line: #1d2843;
+        --text: #e5ecff;
+        --muted: #93a0c4;
+        --accent: #4ea5ff;
+        --accent-2: #5df4d2;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+        background: radial-gradient(circle at top, #15223f 0%, var(--bg) 42%);
+        color: var(--text);
+      }
+      .container {
+        width: min(1180px, 92vw);
+        margin: 0 auto;
+      }
+      nav {
+        position: sticky;
+        top: 0;
+        backdrop-filter: blur(10px);
+        background: rgba(7, 11, 18, 0.82);
+        border-bottom: 1px solid var(--line);
+        z-index: 20;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 0;
+      }
+      .logo {
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--text);
+      }
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .nav-links a {
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .lang {
+        display: flex;
+        gap: 0.35rem;
+      }
+      .lang button {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        cursor: pointer;
+      }
+      .lang button.active {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+      header {
+        padding: 4.5rem 0 2rem;
+      }
+      h1 {
+        font-size: clamp(2rem, 5vw, 3rem);
+        margin: 0 0 1rem;
+      }
+      p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .hero-actions {
+        margin-top: 1.5rem;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .btn {
+        text-decoration: none;
+        font-weight: 700;
+        border-radius: 0.7rem;
+        padding: 0.8rem 1.1rem;
+        border: 1px solid var(--line);
+      }
+      .btn.primary {
+        background: linear-gradient(90deg, var(--accent), #637dff);
+        color: #041024;
+        border: none;
+      }
+      .btn.secondary {
+        color: var(--text);
+      }
+      section {
+        padding: 2rem 0;
+      }
+      h2 {
+        margin: 0 0 0.8rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 0.9rem;
+        padding: 1rem;
+      }
+      .price {
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+      .status {
+        display: inline-block;
+        margin-top: 0.4rem;
+        font-size: 0.8rem;
+        color: #061126;
+        background: var(--accent-2);
+        border-radius: 999px;
+        padding: 0.2rem 0.5rem;
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        margin-top: 1.5rem;
+        padding: 1.25rem 0 2rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
   </head>
   <body>
-    <main>
-      <h1>Earthquake Connect</h1>
-      <p>Observation-only monitoring mode is active.</p>
+    <nav>
+      <div class="container nav-inner">
+        <a class="logo" href="/" data-en="SS6CONNECT" data-bn="এসএস৬কানেক্ট">SS6CONNECT</a>
+        <div class="nav-links">
+          <a href="#features" data-en="Features" data-bn="ফিচার">Features</a>
+          <a href="#marketplace" data-en="Marketplace" data-bn="মার্কেটপ্লেস">Marketplace</a>
+          <a href="/disaster-hud" data-en="Disaster HUD" data-bn="ডিজাস্টার HUD">Disaster HUD</a>
+          <a href="#pricing" data-en="Pricing" data-bn="প্রাইসিং">Pricing</a>
+          <a href="#support" data-en="Support" data-bn="সাপোর্ট">Support</a>
+        </div>
+        <div class="lang">
+          <button id="enBtn" class="active" type="button">EN</button>
+          <button id="bnBtn" type="button">BN</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <header>
+        <h1 data-en="OneOS™ Public Command Layer" data-bn="OneOS™ পাবলিক কমান্ড লেয়ার">OneOS™ Public Command Layer</h1>
+        <p data-en="Global, highly scannable presentation architecture for SHANTA ECON OS™ with integrated service telemetry."
+           data-bn="SHANTA ECON OS™-এর জন্য গ্লোবাল, সহজে স্ক্যানযোগ্য প্রেজেন্টেশন আর্কিটেকচার ও ইন্টিগ্রেটেড টেলিমেট্রি।">
+          Global, highly scannable presentation architecture for SHANTA ECON OS™ with integrated service telemetry.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="/app/login" data-en="Launch App Generator" data-bn="অ্যাপ জেনারেটর চালু করুন">Launch App Generator</a>
+          <a class="btn secondary" href="/disaster-hud" data-en="Explore Disaster HUD" data-bn="ডিজাস্টার HUD দেখুন">Explore Disaster HUD</a>
+        </div>
+      </header>
+
+      <section id="features">
+        <h2 data-en="Core Features" data-bn="মূল ফিচার">Core Features</h2>
+        <div class="grid">
+          <article class="card">
+            <strong data-en="Zero-Trust Security" data-bn="জিরো-ট্রাস্ট সিকিউরিটি">Zero-Trust Security</strong>
+            <p data-en="Hardened access boundaries and isolated service surfaces."
+               data-bn="হার্ডেনড অ্যাক্সেস বাউন্ডারি ও আইসোলেটেড সার্ভিস সারফেস।">
+              Hardened access boundaries and isolated service surfaces.
+            </p>
+          </article>
+          <article class="card">
+            <strong data-en="Live Telemetry Feed" data-bn="লাইভ টেলিমেট্রি ফিড">Live Telemetry Feed</strong>
+            <p id="telemetryLine">Status: Observation-only | Last heartbeat: --</p>
+          </article>
+          <article class="card">
+            <strong data-en="Service Health Endpoint" data-bn="সার্ভিস হেলথ এন্ডপয়েন্ট">Service Health Endpoint</strong>
+            <p><a href="/api/health">/api/health</a> <span class="status">LIVE</span></p>
+          </article>
+        </div>
+      </section>
+
+      <section id="marketplace">
+        <h2 data-en="Global Marketplace" data-bn="গ্লোবাল মার্কেটপ্লেস">Global Marketplace</h2>
+        <div class="grid">
+          <article class="card"><div class="price">Student Tier — $5.00</div></article>
+          <article class="card"><div class="price">Asia Regional — $10/mo</div></article>
+          <article class="card"><div class="price">Global Commercial — $25/mo</div></article>
+          <article class="card"><div class="price">Business Ops — $99/mo</div></article>
+        </div>
+      </section>
+
+      <section id="pricing">
+        <h2 data-en="Subscription Alignment" data-bn="সাবস্ক্রিপশন পরিকল্পনা">Subscription Alignment</h2>
+        <p data-en="All plans are routed through active authenticated endpoints and monitored infrastructure."
+           data-bn="সব প্ল্যান সক্রিয় অথেন্টিকেটেড এন্ডপয়েন্ট ও মনিটরড ইনফ্রাস্ট্রাকচারের মাধ্যমে পরিচালিত।">
+          All plans are routed through active authenticated endpoints and monitored infrastructure.
+        </p>
+      </section>
+
+      <section id="support">
+        <h2 data-en="Support & Operations" data-bn="সাপোর্ট ও অপারেশনস">Support & Operations</h2>
+        <p data-en="Automated anomaly notifications can be dispatched to Telegram and Slack through the alert router."
+           data-bn="অটোমেটেড অ্যানোমালি নোটিফিকেশন অ্যালার্ট রাউটার দিয়ে টেলিগ্রাম ও স্ল্যাকে পাঠানো যায়।">
+          Automated anomaly notifications can be dispatched to Telegram and Slack through the alert router.
+        </p>
+      </section>
     </main>
+
+    <footer>
+      <div class="container">SS6CONNECT OneOS™ / SHANTA ECON OS™ · Observation-first operations</div>
+    </footer>
+
+    <script>
+      const languageTargets = [...document.querySelectorAll("[data-en][data-bn]")];
+      const enBtn = document.getElementById("enBtn");
+      const bnBtn = document.getElementById("bnBtn");
+      const telemetryLine = document.getElementById("telemetryLine");
+
+      const setLanguage = (lang) => {
+        languageTargets.forEach((node) => {
+          node.textContent = node.dataset[lang];
+        });
+        document.documentElement.lang = lang;
+        enBtn.classList.toggle("active", lang === "en");
+        bnBtn.classList.toggle("active", lang === "bn");
+      };
+
+      const updateTelemetry = () => {
+        const now = new Date().toISOString();
+        telemetryLine.textContent = `Status: Observation-only | Last heartbeat: ${now}`;
+      };
+
+      enBtn.addEventListener("click", () => setLanguage("en"));
+      bnBtn.addEventListener("click", () => setLanguage("bn"));
+      setLanguage("en");
+      updateTelemetry();
+      setInterval(updateTelemetry, 15000);
+    </script>
   </body>
 </html>
