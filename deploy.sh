@@ -85,7 +85,8 @@ $COMPOSE_CMD ps
 if $COMPOSE_CMD exec -T postgres psql --version >/dev/null 2>&1; then
   echo -e "${GREEN}✓ PostgreSQL container reachable.${NC}"
 else
-  echo -e "${YELLOW}WARNING: PostgreSQL container check failed. Verify service names in compose file.${NC}"
+  echo -e "${RED}ERROR: PostgreSQL container check failed. Verify service names and container health.${NC}"
+  exit 1
 fi
 
 echo -e "\n${GREEN}Deployment completed.${NC}"
