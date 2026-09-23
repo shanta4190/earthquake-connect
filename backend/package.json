@@ -1,0 +1,18 @@
+{
+  "name": "shanta-econ-sod-mock-server",
+  "version": "1.0.0",
+  "description": "Mock API server for Bangladesh SOD Monitor & Telemetry Staging",
+  "main": "server.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
