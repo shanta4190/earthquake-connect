@@ -19,9 +19,24 @@ node test-local.mjs
 npm run build
 ```
 
+## Local static production bundle
+
+```bash
+chmod +x build-bundle.sh
+./build-bundle.sh
+```
+
 ## Deploy (Wrangler)
 
 ```bash
+npx wrangler pages deploy out --project-name=earthquake-connect --branch=main
+curl -i https://earthquake-connect.pages.dev/api/health
+```
+
+## Deploy from deployment archive
+
+```bash
+unzip -q out.zip
 npx wrangler pages deploy out --project-name=earthquake-connect --branch=main
 curl -i https://earthquake-connect.pages.dev/api/health
 ```
