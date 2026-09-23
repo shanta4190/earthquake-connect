@@ -3,7 +3,7 @@ export async function onRequest(context) {
     ok: true,
     service: "earthquake-connect",
     mode: "observation-only",
-    environment: context.env.ENVIRONMENT || "observation",
+    environment: "observation",
     officialWarning: false,
     official_warning: false,
     timestamp: new Date().toISOString(),
