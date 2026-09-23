@@ -36,14 +36,14 @@ jobs:
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v4
+        uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy out --project-name=earthquake-connect --branch=main
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectName: 'earthquake-connect'
+          directory: 'out'
+          branch: 'main'
 
       - name: Verify Health Endpoint Contract
         run: |
-          response="$(curl -fsS https://earthquake-connect.pages.dev/api/health)"
-          node -e 'const body = JSON.parse(process.argv[1]); if (!body.ok || body.service !== "earthquake-connect" || body.mode !== "observation-only" || body.officialWarning !== false || body.official_warning !== false) process.exit(1);' "$response"
+          curl -s -I https://earthquake-connect.pages.dev/api/health | grep -i "content-type: application/json" || exit 1

@@ -135,7 +135,7 @@ SS6CONNECT OneOS™ is a multi-tenant, sovereign AI application generation engin
 
 ### Automated GitHub Actions CI/CD
 
-Whenever code is committed and pushed to the `main` branch, the workflow in `.github/workflows/deploy.yml` will automatically:
+Whenever code is committed and pushed to the `main` branch, the workflow in `.github/workflows/deploy-earthquake.yml` will automatically:
 
 - Run local test harnesses (`test-local.mjs`).
 - Build the Next.js static export bundle (`out/`).
