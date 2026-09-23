@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  deployments: write
 
 jobs:
   test-build-deploy:
@@ -35,13 +36,12 @@ jobs:
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'earthquake-connect'
-          directory: 'out'
-          branch: 'main'
+          command: pages deploy out --project-name=earthquake-connect --branch=main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify Health Endpoint Contract
         run: |
