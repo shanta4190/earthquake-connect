@@ -19,9 +19,21 @@ node test-local.mjs
 npm run build
 ```
 
-## Deploy (Wrangler)
+## Deploy (GitHub Actions)
 
 ```bash
-npx wrangler pages deploy out --project-name=earthquake-connect --branch=main
-curl -i https://earthquake-connect.pages.dev/api/health
+git push origin main
 ```
+
+Pushing to `main` runs `.github/workflows/deploy.yml`, which:
+
+- installs dependencies with `npm ci`
+- runs `node test-local.mjs` when present
+- builds the static export into `out/`
+- deploys `out/` to the `earthquake-connect` Cloudflare Pages project
+- verifies the live `/api/health` endpoint returns a JSON content type
+
+Before the workflow can deploy, add these repository secrets in GitHub Actions settings:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`

@@ -1,0 +1,48 @@
+name: Deploy SS6CONNECT Portal to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test-build-deploy:
+    name: Test, Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 3. Install Dependencies
+        run: npm ci
+
+      - name: 4. Execute Local Verification Harness
+        run: |
+          if [ -f "test-local.mjs" ]; then
+            node test-local.mjs
+          fi
+
+      - name: 5. Build Next.js Static Export
+        run: npm run build
+
+      - name: 6. Deploy Static Export to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'earthquake-connect'
+          directory: 'out'
+          branch: 'main'
+
+      - name: 7. Verify Health Endpoint Contract
+        run: |
+          echo "Verifying live deployment health plane..."
+          curl -s -I https://earthquake-connect.pages.dev/api/health | grep -i "content-type: application/json" || exit 1
