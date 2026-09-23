@@ -1,0 +1,10 @@
+{
+  "name": "earthquake-connect",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "mkdir -p out && cp index.html out/index.html",
+    "test:local": "node test-local.mjs"
+  }
+}
