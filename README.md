@@ -25,3 +25,13 @@ npm run build
 npx wrangler pages deploy out --project-name=earthquake-connect --branch=main
 curl -i https://earthquake-connect.pages.dev/api/health
 ```
+
+## Backend encrypted backup engine
+
+- The backend backup module is available at `backend/serverBackupEngine.mjs`.
+- Set `BACKUP_ENC_KEY` to a 64-character hex key in backend environment secrets before production use.
+- Run a self-test with:
+
+```bash
+node backend/serverBackupEngine.mjs --test
+```
