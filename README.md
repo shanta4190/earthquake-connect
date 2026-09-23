@@ -25,3 +25,13 @@ npm run build
 npx wrangler pages deploy out --project-name=earthquake-connect --branch=main
 curl -i https://earthquake-connect.pages.dev/api/health
 ```
+
+## Automated production stack deployment
+
+If you are deploying a full Docker-based production stack (portal/API/PostgreSQL) on a VPS:
+
+```bash
+./deploy.sh
+```
+
+The script checks Docker/Compose, creates a `.env` file when missing, and starts services via Docker Compose.
