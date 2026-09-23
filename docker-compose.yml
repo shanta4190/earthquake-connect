@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. Database Tier: PostgreSQL 16 with Row-Level Security (RLS)
+  # ---------------------------------------------------------------------------
+  postgres-ledger:
+    image: postgres:16-alpine
+    container_name: s6_postgres_ledger
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-s6_procure_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vault_secure_crypto_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-shanta_econ_ledger}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-schema.sql:/docker-entrypoint-initdb.d/01-init-schema.sql
+    networks:
+      - s6_secure_backplane
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-s6_procure_admin} -d ${POSTGRES_DB:-shanta_econ_ledger}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # 2. Application Tier: Encrypted Node.js Backend API Gateway
+  # ---------------------------------------------------------------------------
+  api-gateway:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: s6_api_gateway
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      DB_HOST: postgres-ledger
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-s6_procure_admin}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-vault_secure_crypto_pass_2026}
+      DB_NAME: ${POSTGRES_DB:-shanta_econ_ledger}
+      GATEWAY_ENC_KEY: ${GATEWAY_ENC_KEY:-0123456789abcdef0123456789abcdef}
+      JWT_SECRET: ${JWT_SECRET:-sovereign_jwt_secret_token_2026}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres-ledger:
+        condition: service_healthy
+    networks:
+      - s6_secure_backplane
+
+  # ---------------------------------------------------------------------------
+  # 3. Presentation Tier: Next.js Sovereign Portal & Bangladesh SOD HUD
+  # ---------------------------------------------------------------------------
+  nextjs-portal:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: s6_nextjs_portal
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_BACKEND_API_URL: http://localhost:8080
+      NEXT_PUBLIC_ENVIRONMENT: staging
+      NEXT_PUBLIC_OFFICIAL_WARNING_DISCLAIMER: "false"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - s6_secure_backplane
+
+networks:
+  s6_secure_backplane:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
