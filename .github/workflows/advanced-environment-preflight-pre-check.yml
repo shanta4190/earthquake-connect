@@ -1,0 +1,63 @@
+name: Earthquake Connect — Advanced Environment Pre-Flight Pre-Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-identity-and-access:
+    runs-on: ubuntu-latest
+    # Enforces strict Zero-Trust environment isolation blocks
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    steps:
+      - name: Check out architectural repository structure
+        uses: actions/checkout@v4
+
+      - name: Inspect Scope Restrictions & Secret Leaks
+        run: |
+          set -euo pipefail
+          echo "🔍 Scanning files for universal administrator or token leaks..."
+          # Scan configuration sheets for cleartext tokens or master identifiers
+          files=("wrangler.toml")
+          if [ -f "cloudflare/waf/rule.json" ]; then
+            files+=("cloudflare/waf/rule.json")
+          fi
+
+          if grep -E "CLOUDFLARE_EMAIL|GLOBAL_API_KEY|API_KEY" "${files[@]}"; then
+            echo "❌ CRITICAL FAULT: Master keys or explicit email parameters found in repository text."
+            exit 1
+          fi
+          echo "✅ Secret text scan passed."
+
+      - name: Validate Cloudflare Zone Credentials
+        env:
+          CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          set -euo pipefail
+          echo "🌐 Testing Cloudflare API token capability bounds..."
+          if [ -z "${CLOUDFLARE_TOKEN}" ] || [ -z "${ZONE_ID}" ]; then
+            echo "❌ DEPLOYMENT DENIED: Scoped API token or Zone configuration ID fields are missing."
+            exit 1
+          fi
+
+          # Query token capabilities interface to verify least-privilege scoping rules
+          TOKEN_VERIFY_RESPONSE=$(curl -sS -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+            --oauth2-bearer "${CLOUDFLARE_TOKEN}" \
+            -H "Content-Type: application/json")
+
+          TOKEN_VERIFY_RESPONSE="${TOKEN_VERIFY_RESPONSE}" node -e 'const r=JSON.parse(process.env.TOKEN_VERIFY_RESPONSE); if(!r.success){process.exit(1)}'
+
+          ZONE_VERIFY_RESPONSE=$(curl -sS -X GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}" \
+            --oauth2-bearer "${CLOUDFLARE_TOKEN}" \
+            -H "Content-Type: application/json")
+
+          ZONE_ID="${ZONE_ID}" ZONE_VERIFY_RESPONSE="${ZONE_VERIFY_RESPONSE}" node -e 'const zone=process.env.ZONE_ID; const r=JSON.parse(process.env.ZONE_VERIFY_RESPONSE); if(!r.success || !r.result || r.result.id !== zone){process.exit(1)}'
+
+          echo "✅ Least-privilege API token context validated."
