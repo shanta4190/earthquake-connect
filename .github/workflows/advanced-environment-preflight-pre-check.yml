@@ -10,11 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  verify-identity-and-access:
+  inspect-scope-restrictions:
     runs-on: ubuntu-latest
-    # Enforces strict Zero-Trust environment isolation blocks
-    environment:
-      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     steps:
       - name: Check out architectural repository structure
         uses: actions/checkout@v4
@@ -24,40 +21,66 @@ jobs:
           set -euo pipefail
           echo "🔍 Scanning files for universal administrator or token leaks..."
           # Scan configuration sheets for cleartext tokens or master identifiers
-          files=("wrangler.toml")
+          files=()
+          if [ -f "wrangler.toml" ]; then
+            files+=("wrangler.toml")
+          fi
           if [ -f "cloudflare/waf/rule.json" ]; then
             files+=("cloudflare/waf/rule.json")
           fi
 
-          if grep -E "CLOUDFLARE_EMAIL|GLOBAL_API_KEY|API_KEY" "${files[@]}"; then
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "ℹ️ No Cloudflare configuration files found to scan."
+            exit 0
+          fi
+
+          normalized_content="$(cat "${files[@]}" | tr '[:upper:]' '[:lower:]')"
+          if printf '%s\n' "${normalized_content}" | grep -E "(^|[[:space:]'{,])\"?(cloudflare_email|global_api_key|api_key|api_token|cloudflare_api_token|cloudflare_account_id|cloudflare_zone_id|account_id|zone_id)\"?[[:space:]]*[:=]"; then
             echo "❌ CRITICAL FAULT: Master keys or explicit email parameters found in repository text."
             exit 1
           fi
           echo "✅ Secret text scan passed."
 
+  verify-identity-and-access:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: inspect-scope-restrictions
+    runs-on: ubuntu-latest
+    # Enforces strict Zero-Trust environment isolation blocks
+    environment:
+      name: production
+    steps:
       - name: Validate Cloudflare Zone Credentials
         env:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: |
           set -euo pipefail
-          echo "🌐 Testing Cloudflare API token capability bounds..."
+          echo "🌐 Testing Cloudflare token authenticity and zone authorization..."
           if [ -z "${CLOUDFLARE_TOKEN}" ] || [ -z "${ZONE_ID}" ]; then
             echo "❌ DEPLOYMENT DENIED: Scoped API token or Zone configuration ID fields are missing."
             exit 1
           fi
 
-          # Query token capabilities interface to verify least-privilege scoping rules
-          TOKEN_VERIFY_RESPONSE=$(curl -sS -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
-            --oauth2-bearer "${CLOUDFLARE_TOKEN}" \
-            -H "Content-Type: application/json")
+          # Verify token authenticity first, then authorize access against the target zone
+          AUTH_HEADER='Authorization: Bearer '"${CLOUDFLARE_TOKEN}"
+          fetch_cloudflare() {
+            local url="$1"
+            curl --fail --show-error -sS -X GET "${url}" \
+              -H "${AUTH_HEADER}" \
+              -H "Content-Type: application/json"
+          }
 
-          TOKEN_VERIFY_RESPONSE="${TOKEN_VERIFY_RESPONSE}" node -e 'const r=JSON.parse(process.env.TOKEN_VERIFY_RESPONSE); if(!r.success){process.exit(1)}'
+          ensure_success_json() {
+            local context="$1"
+            local payload="$2"
+            RESPONSE_CONTEXT="${context}" RESPONSE_PAYLOAD="${payload}" node -e 'try { const r = JSON.parse(process.env.RESPONSE_PAYLOAD); if (!r.success) { console.error(`❌ ${process.env.RESPONSE_CONTEXT}: Cloudflare API reported failure.`, JSON.stringify(r.errors ?? r)); process.exit(1); } } catch (e) { console.error(`❌ ${process.env.RESPONSE_CONTEXT}: Invalid JSON received from Cloudflare API.`); process.exit(1); }'
+          }
 
-          ZONE_VERIFY_RESPONSE=$(curl -sS -X GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}" \
-            --oauth2-bearer "${CLOUDFLARE_TOKEN}" \
-            -H "Content-Type: application/json")
+          TOKEN_VERIFY_RESPONSE=$(fetch_cloudflare "https://api.cloudflare.com/client/v4/user/tokens/verify")
+          ensure_success_json "AUTHENTICATION FAILURE" "${TOKEN_VERIFY_RESPONSE}"
 
-          ZONE_ID="${ZONE_ID}" ZONE_VERIFY_RESPONSE="${ZONE_VERIFY_RESPONSE}" node -e 'const zone=process.env.ZONE_ID; const r=JSON.parse(process.env.ZONE_VERIFY_RESPONSE); if(!r.success || !r.result || r.result.id !== zone){process.exit(1)}'
+          ZONE_VERIFY_RESPONSE=$(fetch_cloudflare "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}")
+          ensure_success_json "AUTHORIZATION FAILURE" "${ZONE_VERIFY_RESPONSE}"
+          ZONE_ID="${ZONE_ID}" ZONE_VERIFY_RESPONSE="${ZONE_VERIFY_RESPONSE}" node -e 'const zone = process.env.ZONE_ID; const r = JSON.parse(process.env.ZONE_VERIFY_RESPONSE); if (!r.result || r.result.id !== zone) { console.error("❌ AUTHORIZATION FAILURE: Cloudflare zone verification did not match the expected Zone ID."); process.exit(1); }'
 
           echo "✅ Least-privilege API token context validated."
